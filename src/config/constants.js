@@ -14,10 +14,11 @@ export const POMODORO_DEFAULTS = {
 export const COLORS = {
   primary: '#00f0ff',
   background: '#050505',
-  darkBg: '#0d0d0d',
-  border: '#222',
+  darkBg: '#0a0a0a',
+  panel: '#0d0d0d',
+  border: '#333',
   text: '#ffffff',
-  textMuted: '#555',
+  textMuted: '#888',
   success: '#00ff00',
   warning: '#ffff00',
   error: '#ff0000'

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Play, Pause, RotateCcw, CheckSquare, Plus, Wand2, Trash2, Loader2, Terminal, Settings, LayoutDashboard, Cpu, Scale, Search, Users, BookOpen, MessageSquare } from 'lucide-react';
+import { Clock, Play, Pause, RotateCcw, CheckSquare, Plus, Wand2, Trash2, Loader2, Terminal, Settings, LayoutDashboard, Cpu, Scale, Search, Users, BookOpen, MessageSquare, Activity, Briefcase, UserPlus } from 'lucide-react';
 import { query, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db, appId } from '../../config/firebase';
 import { callGemini } from '../../utils/geminiApi';
@@ -34,24 +34,24 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
     if (!user || !db) return;
     const q = query(collection(db, 'artifacts', appId, 'users', user.uid, 'tasks'));
     const unsub = onSnapshot(q, (snapshot) => {
-        const loaded = snapshot.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.timestamp - a.timestamp);
-        if(loaded.length > 0) setTasks(loaded);
+      const loaded = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.timestamp - a.timestamp);
+      if (loaded.length > 0) setTasks(loaded);
     });
     return () => unsub();
   }, [user]);
 
   const addTask = async (e) => {
     if ((e.key === 'Enter' || e.type === 'click') && newTask.trim()) {
-        if (user && db) {
-            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'tasks'), {
-                text: newTask,
-                completed: false,
-                timestamp: serverTimestamp()
-            });
-        } else {
-            setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }]);
-        }
-        setNewTask('');
+      if (user && db) {
+        await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'tasks'), {
+          text: newTask,
+          completed: false,
+          timestamp: serverTimestamp()
+        });
+      } else {
+        setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }]);
+      }
+      setNewTask('');
     }
   };
 
@@ -60,62 +60,62 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
     setIsMagicLoading(true);
     const originalTask = newTask;
     setNewTask('Analysing task structure...');
-    
+
     try {
-        const sys = "Break down the recruiting task into 3-4 concise, actionable sub-steps. Output ONLY the steps, one per line. No numbering.";
-        const resp = await callGemini(originalTask, sys);
-        const steps = resp.split('\n').filter(line => line.trim().length > 0);
-        
-        if (user && db) {
-            for (const step of steps) {
-                await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'tasks'), {
-                    text: step.replace(/^-\s*/, '').trim(), 
-                    completed: false,
-                    timestamp: serverTimestamp()
-                });
-            }
-        } else {
-            const newTasks = steps.map(step => ({
-                id: Date.now() + Math.random(),
-                text: step.replace(/^-\s*/, '').trim(),
-                completed: false
-            }));
-            setTasks([...tasks, ...newTasks]);
+      const sys = "Break down the recruiting task into 3-4 concise, actionable sub-steps. Output ONLY the steps, one per line. No numbering.";
+      const resp = await callGemini(originalTask, sys);
+      const steps = resp.split('\n').filter(line => line.trim().length > 0);
+
+      if (user && db) {
+        for (const step of steps) {
+          await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'tasks'), {
+            text: step.replace(/^-\s*/, '').trim(),
+            completed: false,
+            timestamp: serverTimestamp()
+          });
         }
-        setNewTask('');
+      } else {
+        const newTasks = steps.map(step => ({
+          id: Date.now() + Math.random(),
+          text: step.replace(/^-\s*/, '').trim(),
+          completed: false
+        }));
+        setTasks([...tasks, ...newTasks]);
+      }
+      setNewTask('');
     } catch (e) {
-        if (e.message === "MISSING_KEY") {
-            alert("Please configure API Key in Settings.");
-            setActiveTab('settings');
-        }
-        setNewTask(originalTask); 
+      if (e.message === "MISSING_KEY") {
+        alert("Please configure API Key in Settings.");
+        setActiveTab('settings');
+      }
+      setNewTask(originalTask);
     } finally {
-        setIsMagicLoading(false);
+      setIsMagicLoading(false);
     }
   };
 
   const toggleTask = async (task) => {
     if (user && db) {
-        await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'tasks', task.id), {
-            completed: !task.completed
-        });
+      await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'tasks', task.id), {
+        completed: !task.completed
+      });
     } else {
-         setTasks(tasks.map(t => t.id === task.id ? {...t, completed: !t.completed} : t));
+      setTasks(tasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t));
     }
   };
 
   const deleteTask = async (id) => {
-     if (user && db) {
-         await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'tasks', id));
-     } else {
-         setTasks(tasks.filter(t => t.id !== id));
-     }
+    if (user && db) {
+      await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'tasks', id));
+    } else {
+      setTasks(tasks.filter(t => t.id !== id));
+    }
   };
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'offer', label: 'Compensation Calc', icon: Cpu },
-    { id: 'justification', label: 'Offer Justification', icon: Scale }, 
+    { id: 'justification', label: 'Offer Justification', icon: Scale },
     { id: 'sourcing', label: 'Candidate Sourcing', icon: Search },
     { id: 'interview', label: 'Interview Analyzer', icon: Users },
     { id: 'playbook', label: 'Playbook Generator', icon: BookOpen },
@@ -124,109 +124,102 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
   ];
 
   return (
-    <aside className="w-64 bg-[#0a0a0a] border-r border-[#222] flex flex-col h-full relative z-10 shadow-2xl flex-shrink-0">
-      <div className="p-6 border-b border-[#222]">
-        <h1 className="text-xl font-bold tracking-widest text-white flex items-center gap-2">
-          <Terminal className="text-[#00f0ff] w-5 h-5" />
+    <aside className="w-60 bg-[#0a0a0a] border-r border-[#222] flex flex-col h-full relative z-10 shadow-2xl flex-shrink-0">
+      {/* Header */}
+      <div className="p-4 border-b border-[#222]">
+        <h1 className="text-lg font-bold tracking-[0.2em] text-white flex items-center gap-2">
+          <Terminal className="text-[#00f0ff] w-4 h-4" />
           TT-RECRUIT
         </h1>
-        <div className="flex items-center gap-2 mt-2">
-            <div className={`w-2 h-2 rounded-full ${hasKey ? 'bg-green-500 shadow-[0_0_5px_#00ff00]' : 'bg-red-500'}`} />
-            <p className="text-[10px] text-[#555] font-mono uppercase tracking-widest">
-                {hasKey ? 'System Online' : 'Key Required'}
-            </p>
+        <div className="flex items-center gap-2 mt-1">
+          <div className={`w-1.5 h-1.5 rounded-full ${hasKey ? 'bg-[#00f0ff] shadow-[0_0_5px_#00f0ff]' : 'bg-red-500'}`} />
+          <p className="text-[9px] text-[#666] font-mono uppercase tracking-widest">
+            {hasKey ? 'System Online' : 'Key Required'}
+          </p>
         </div>
       </div>
 
-      <nav className="flex-1 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+      {/* Navigation */}
+      <nav className="flex-1 py-4 space-y-0.5 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`w-full flex items-center gap-3 px-6 py-3 text-xs font-mono uppercase tracking-wider transition-all duration-200 border-l-2
-              ${activeTab === item.id 
-                ? 'bg-[#111] text-[#00f0ff] border-[#00f0ff] shadow-[inset_10px_0_20px_-10px_rgba(0,240,255,0.1)]' 
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-[10px] font-mono uppercase tracking-wider transition-all duration-200 border-l-2
+              ${activeTab === item.id
+                ? 'bg-[#111] text-[#00f0ff] border-[#00f0ff] shadow-[inset_10px_0_20px_-10px_rgba(0,240,255,0.1)]'
                 : 'text-gray-500 border-transparent hover:text-white hover:bg-[#0f0f0f]'}`}
           >
-            <item.icon className={`w-4 h-4 flex-shrink-0 ${activeTab === item.id ? 'drop-shadow-[0_0_5px_#00f0ff]' : ''}`} />
+            <item.icon className={`w-3.5 h-3.5 flex-shrink-0 ${activeTab === item.id ? 'drop-shadow-[0_0_5px_#00f0ff]' : ''}`} />
             <span className="text-left flex-1 truncate">{item.label}</span>
           </button>
         ))}
       </nav>
 
+      {/* Bottom Section: Search & Metrics */}
       <div className="border-t border-[#222] bg-[#0c0c0c] flex flex-col">
-        <div className="p-4 border-b border-[#222]">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-mono uppercase text-gray-500 flex items-center gap-2">
-              <Clock className="w-3 h-3 text-[#00f0ff]" /> Focus Timer
-            </span>
-            <div className="flex gap-1">
-              <button 
-                onClick={() => setPomodoro(p => ({...p, active: !p.active}))}
-                className="p-1 hover:bg-[#222] rounded text-gray-400 hover:text-white transition-colors"
-              >
-                {pomodoro.active ? <Pause className="w-3 h-3"/> : <Play className="w-3 h-3"/>}
-              </button>
-              <button 
-                onClick={() => setPomodoro(p => ({...p, active: false, timeLeft: 25 * 60}))}
-                className="p-1 hover:bg-[#222] rounded text-gray-400 hover:text-white transition-colors"
-              >
-                <RotateCcw className="w-3 h-3"/>
-              </button>
-            </div>
-          </div>
-          <div className="text-3xl font-mono font-bold text-white tracking-widest text-center py-2 bg-[#050505] border border-[#222] rounded-sm">
-            {formatTime(pomodoro.timeLeft)}
+        <div className="p-4 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-1.5 w-3 h-3 text-gray-500" />
+            <input
+              placeholder="SEARCH CANDIDATES..."
+              className="w-full bg-[#050505] border border-[#222] text-[10px] font-mono py-1.5 pl-7 pr-2 text-white focus:border-[#00f0ff] outline-none rounded-sm placeholder:text-gray-700"
+            />
           </div>
         </div>
 
-        <div className="p-4 flex flex-col flex-1 min-h-[150px] max-h-[300px]">
-          <span className="text-[10px] font-mono uppercase text-gray-500 mb-2 flex items-center gap-2">
-            <CheckSquare className="w-3 h-3 text-[#00f0ff]" /> Active Tasks
-          </span>
-          
-          <div className="flex-1 overflow-y-auto custom-scrollbar mb-2 space-y-1">
-             {tasks.length === 0 && <div className="text-[10px] text-gray-700 italic text-center py-2">No active tasks</div>}
-             {tasks.map(task => (
-                <div key={task.id} className="flex items-center gap-2 group bg-[#080808] border border-transparent hover:border-[#222] p-1.5 rounded-sm">
-                    <button 
-                        onClick={() => toggleTask(task)}
-                        className={`w-3 h-3 flex-shrink-0 border ${task.completed ? 'bg-[#00f0ff] border-[#00f0ff]' : 'border-gray-600'} flex items-center justify-center`}
-                    >
-                        {task.completed && <CheckSquare className="w-2 h-2 text-black" />}
-                    </button>
-                    <span className={`text-[10px] font-mono truncate flex-1 ${task.completed ? 'text-gray-600 line-through' : 'text-gray-300'}`}>
-                        {task.text}
-                    </span>
-                    <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500">
-                        <Trash2 className="w-3 h-3" />
-                    </button>
-                </div>
-            ))}
+        {/* Focus Toolbar (Fixed Bottom) */}
+        <div className="p-3 bg-[#050505] border-t border-[#222] flex flex-col gap-2">
+          {/* Quick Task Input */}
+          <div className="relative flex items-center gap-1">
+            <input
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              onKeyDown={addTask}
+              disabled={isMagicLoading}
+              placeholder="QUICK TASK..."
+              className="w-full bg-[#0a0a0a] border border-[#222] text-[10px] font-mono py-1.5 pl-2 pr-12 text-white focus:border-[#00f0ff] outline-none rounded-sm disabled:opacity-50 placeholder:text-gray-700"
+            />
+            <div className="absolute right-1 flex items-center gap-1">
+              <button
+                onClick={smartAddTask}
+                disabled={isMagicLoading || !newTask.trim()}
+                title="Magic Breakdown"
+                className="text-gray-500 hover:text-[#00f0ff] disabled:opacity-30"
+              >
+                {isMagicLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+              </button>
+              <button onClick={addTask} className="text-gray-500 hover:text-[#00f0ff]">
+                <Plus className="w-3 h-3" />
+              </button>
+            </div>
           </div>
 
-          <div className="relative flex items-center gap-1">
-             <input 
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                onKeyDown={addTask}
-                disabled={isMagicLoading}
-                placeholder="ADD TASK..."
-                className="w-full bg-[#050505] border border-[#222] text-xs font-mono py-1.5 pl-2 pr-12 text-white focus:border-[#00f0ff] outline-none rounded-sm disabled:opacity-50"
-             />
-             <div className="absolute right-1 flex items-center gap-1">
-                 <button 
-                    onClick={smartAddTask} 
-                    disabled={isMagicLoading || !newTask.trim()}
-                    title="Magic Breakdown: Split task into sub-steps"
-                    className="text-gray-500 hover:text-[#00f0ff] disabled:opacity-30"
-                 >
-                    {isMagicLoading ? <Loader2 className="w-3 h-3 animate-spin"/> : <Wand2 className="w-3 h-3" />}
-                 </button>
-                 <button onClick={addTask} className="text-gray-500 hover:text-[#00f0ff]">
-                    <Plus className="w-3 h-3" />
-                 </button>
-             </div>
+          {/* Timer & Task Count */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPomodoro(p => ({ ...p, active: !p.active }))}
+                className={`p-1.5 rounded transition-colors ${pomodoro.active ? 'text-[#00f0ff] bg-[#00f0ff]/10' : 'text-gray-500 hover:text-white'}`}
+              >
+                {pomodoro.active ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              </button>
+              <span className="text-xs font-mono font-bold text-gray-300 tracking-widest">
+                {formatTime(pomodoro.timeLeft)}
+              </span>
+              <button
+                onClick={() => setPomodoro(p => ({ ...p, active: false, timeLeft: 25 * 60 }))}
+                className="p-1 text-gray-500 hover:text-white transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] text-gray-500 font-mono uppercase">
+                {tasks.filter(t => !t.completed).length} Tasks
+              </span>
+            </div>
           </div>
         </div>
       </div>
