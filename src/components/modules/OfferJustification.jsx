@@ -56,7 +56,7 @@ const OfferJustification = ({ setActiveTab }) => {
         try {
             const text = await callGemini(userPrompt, systemPrompt);
             setJustification(text);
-        } catch(e) {
+        } catch (e) {
             if (e.message === "MISSING_KEY") {
                 alert("ACCESS DENIED: Please enter your API Key in System Settings.");
                 setActiveTab('settings');
@@ -70,71 +70,71 @@ const OfferJustification = ({ setActiveTab }) => {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full animate-in fade-in duration-500">
-            <div className="bg-[#0d0d0d] border border-[#222] p-6 flex flex-col h-full overflow-hidden">
+            <div className="bg-[#0d0d0d] border border-[#333] p-6 flex flex-col h-full overflow-hidden group hover:border-[#00f0ff]/30 transition-colors">
                 <h2 className="text-[#00f0ff] font-mono text-sm uppercase tracking-widest mb-6 flex items-center gap-2">
                     <Scale className="w-4 h-4" /> Justification Matrix
                 </h2>
-                
+
                 <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2">
                     <div>
-                        <label className="block text-[10px] uppercase text-gray-500 font-mono mb-1">Candidate Resume / Summary</label>
-                        <textarea 
-                            value={inputs.resume} 
-                            onChange={e => setInputs({...inputs, resume: e.target.value})} 
-                            className="w-full bg-[#151515] border border-[#444] p-3 text-xs text-white focus:border-[#00f0ff] focus:bg-[#222] outline-none font-mono h-32 resize-none transition-colors" 
-                            placeholder="Paste resume text here..."
+                        <label className="block text-[10px] uppercase text-[#888] font-mono mb-2">Candidate Resume / Summary</label>
+                        <textarea
+                            value={inputs.resume}
+                            onChange={e => setInputs({ ...inputs, resume: e.target.value })}
+                            className="w-full bg-[#050505] border border-[#333] p-3 text-xs text-white focus:border-[#00f0ff] outline-none font-mono h-32 resize-none transition-all placeholder:text-gray-700 leading-relaxed"
+                            placeholder="// Paste resume text here..."
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] uppercase text-gray-500 font-mono mb-1">Job Description</label>
-                        <textarea 
-                            value={inputs.jobDesc} 
-                            onChange={e => setInputs({...inputs, jobDesc: e.target.value})} 
-                            className="w-full bg-[#151515] border border-[#444] p-3 text-xs text-white focus:border-[#00f0ff] focus:bg-[#222] outline-none font-mono h-32 resize-none transition-colors" 
-                            placeholder="Paste JD here..."
+                        <label className="block text-[10px] uppercase text-[#888] font-mono mb-2">Job Description</label>
+                        <textarea
+                            value={inputs.jobDesc}
+                            onChange={e => setInputs({ ...inputs, jobDesc: e.target.value })}
+                            className="w-full bg-[#050505] border border-[#333] p-3 text-xs text-white focus:border-[#00f0ff] outline-none font-mono h-32 resize-none transition-all placeholder:text-gray-700 leading-relaxed"
+                            placeholder="// Paste JD here..."
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] uppercase text-gray-500 font-mono mb-1">Interview Scorecards</label>
-                        <textarea 
-                            value={inputs.scorecards} 
-                            onChange={e => setInputs({...inputs, scorecards: e.target.value})} 
-                            className="w-full bg-[#151515] border border-[#444] p-3 text-xs text-white focus:border-[#00f0ff] focus:bg-[#222] outline-none font-mono h-32 resize-none transition-colors" 
-                            placeholder="Paste feedback notes here..."
+                        <label className="block text-[10px] uppercase text-[#888] font-mono mb-2">Interview Scorecards</label>
+                        <textarea
+                            value={inputs.scorecards}
+                            onChange={e => setInputs({ ...inputs, scorecards: e.target.value })}
+                            className="w-full bg-[#050505] border border-[#333] p-3 text-xs text-white focus:border-[#00f0ff] outline-none font-mono h-32 resize-none transition-all placeholder:text-gray-700 leading-relaxed"
+                            placeholder="// Paste feedback notes here..."
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] uppercase text-gray-500 font-mono mb-1">Strategic Context / Notes</label>
-                        <textarea 
-                            value={inputs.strategicNotes} 
-                            onChange={e => setInputs({...inputs, strategicNotes: e.target.value})} 
-                            className="w-full bg-[#151515] border border-[#444] p-3 text-xs text-white focus:border-[#00f0ff] focus:bg-[#222] outline-none font-mono h-24 resize-none transition-colors" 
-                            placeholder="Why is this role critical? What is the business gap?"
+                        <label className="block text-[10px] uppercase text-[#888] font-mono mb-2">Strategic Context / Notes</label>
+                        <textarea
+                            value={inputs.strategicNotes}
+                            onChange={e => setInputs({ ...inputs, strategicNotes: e.target.value })}
+                            className="w-full bg-[#050505] border border-[#333] p-3 text-xs text-white focus:border-[#00f0ff] outline-none font-mono h-24 resize-none transition-all placeholder:text-gray-700 leading-relaxed"
+                            placeholder="// Why is this role critical? What is the business gap?"
                         />
                     </div>
                 </div>
 
-                <button 
+                <button
                     onClick={generateMemo}
                     disabled={generating}
-                    className="mt-4 w-full bg-[#111] border border-[#00f0ff] text-[#00f0ff] py-4 text-xs font-bold uppercase tracking-widest hover:bg-[#00f0ff] hover:text-black transition-all flex items-center justify-center gap-2"
+                    className="mt-6 w-full bg-[#111] border border-[#333] hover:border-[#00f0ff] text-[#00f0ff] py-4 text-xs font-bold uppercase tracking-widest hover:bg-[#00f0ff] hover:text-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {generating ? <Loader2 className="animate-spin w-4 h-4" /> : <Zap className="w-4 h-4" />}
                     {generating ? 'Synthesizing...' : 'Generate Offer Justification'}
                 </button>
             </div>
 
-            <div className="bg-[#0d0d0d] border border-[#222] p-6 relative flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-[#00f0ff] font-mono text-sm uppercase tracking-widest flex items-center gap-2">
-                        <FileText className="w-4 h-4" /> Offer Justification
+            <div className="bg-[#0d0d0d] border border-[#333] p-1 flex flex-col relative group hover:border-[#00f0ff]/30 transition-colors">
+                <div className="bg-[#111] px-4 py-3 border-b border-[#333] flex justify-between items-center">
+                    <h2 className="text-[#00f0ff] font-mono text-xs uppercase tracking-widest flex items-center gap-2">
+                        <FileText className="w-3 h-3" /> Offer Justification
                     </h2>
                     {justification && <PrintButton />}
                 </div>
-                <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#050505] p-6 border border-[#222] font-mono text-sm text-gray-300 leading-relaxed whitespace-pre-wrap selection:bg-[#00f0ff] selection:text-black">
-                    {justification || <div className="flex flex-col items-center justify-center h-full text-gray-600 italic gap-2">
-                        <Scale className="w-8 h-8 opacity-20"/>
-                        <span>Awaiting tactical inputs...</span>
+                <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#050505] p-6 font-mono text-sm text-gray-300 leading-relaxed whitespace-pre-wrap selection:bg-[#00f0ff] selection:text-black">
+                    {justification || <div className="flex flex-col items-center justify-center h-full text-[#333] gap-2">
+                        <Scale className="w-8 h-8 opacity-20" />
+                        <span className="text-xs uppercase tracking-widest">Awaiting tactical inputs</span>
                     </div>}
                 </div>
             </div>

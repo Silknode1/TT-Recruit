@@ -17,7 +17,7 @@ const CandidateSourcing = ({ setActiveTab }) => {
         try {
             const res = await callGemini(prompt, sys);
             setMatrix(res);
-        } catch(e) { 
+        } catch (e) {
             if (e.message === "MISSING_KEY") {
                 alert("ACCESS DENIED: Please enter your API Key in System Settings.");
                 setActiveTab('settings');
@@ -35,7 +35,7 @@ const CandidateSourcing = ({ setActiveTab }) => {
         try {
             const res = await callGemini(boolInput, sys);
             setBoolOutput(res);
-        } catch(e) { 
+        } catch (e) {
             if (e.message === "MISSING_KEY") {
                 alert("ACCESS DENIED: Please enter your API Key in System Settings.");
                 setActiveTab('settings');
@@ -48,58 +48,71 @@ const CandidateSourcing = ({ setActiveTab }) => {
 
     return (
         <div className="h-full flex flex-col gap-6 animate-in fade-in duration-500">
-            <div className="bg-[#0d0d0d] border border-[#222] p-6 flex gap-4 items-end">
+            <div className="bg-[#0d0d0d] border border-[#333] p-6 flex gap-4 items-end group hover:border-[#00f0ff]/30 transition-colors">
                 <div className="flex-1">
-                    <label className="text-[10px] uppercase text-gray-500 font-mono">Target Role</label>
-                    <input 
-                        value={queryData.role} onChange={e => setQueryData({...queryData, role: e.target.value})}
-                        className="w-full bg-[#050505] border border-[#333] p-2 text-sm text-white font-mono focus:border-[#00f0ff] outline-none" 
+                    <label className="text-[10px] uppercase text-[#888] font-mono mb-2 block">Target Role</label>
+                    <input
+                        value={queryData.role} onChange={e => setQueryData({ ...queryData, role: e.target.value })}
+                        className="w-full bg-[#050505] border border-[#333] p-3 text-sm text-white font-mono focus:border-[#00f0ff] outline-none transition-all placeholder:text-gray-700"
                         placeholder="e.g. Kernel Engineer"
                     />
                 </div>
                 <div className="flex-1">
-                    <label className="text-[10px] uppercase text-gray-500 font-mono">Core Stack</label>
-                    <input 
-                        value={queryData.stack} onChange={e => setQueryData({...queryData, stack: e.target.value})}
-                        className="w-full bg-[#050505] border border-[#333] p-2 text-sm text-white font-mono focus:border-[#00f0ff] outline-none" 
+                    <label className="text-[10px] uppercase text-[#888] font-mono mb-2 block">Core Stack</label>
+                    <input
+                        value={queryData.stack} onChange={e => setQueryData({ ...queryData, stack: e.target.value })}
+                        className="w-full bg-[#050505] border border-[#333] p-3 text-sm text-white font-mono focus:border-[#00f0ff] outline-none transition-all placeholder:text-gray-700"
                         placeholder="e.g. Rust, Linux, eBPF"
                     />
                 </div>
-                <button onClick={generateMatrix} disabled={loading} className="bg-[#00f0ff] text-black font-bold uppercase text-xs px-6 py-3 hover:bg-white transition-colors">
-                    {loading ? <Loader2 className="animate-spin w-4 h-4"/> : 'Scan Matrix'}
+                <button
+                    onClick={generateMatrix}
+                    disabled={loading}
+                    className="bg-[#111] border border-[#333] text-[#00f0ff] font-bold uppercase text-xs px-8 py-3.5 hover:bg-[#00f0ff] hover:text-black transition-all tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Search className="w-4 h-4" />}
+                    {loading ? 'Scanning...' : 'Scan Matrix'}
                 </button>
             </div>
 
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-[#050505] border border-[#222] relative p-6 overflow-hidden flex flex-col">
-                    <div className="absolute top-0 left-0 bg-[#00f0ff] text-black text-[10px] font-bold px-2 py-1 font-mono uppercase">Search Matrix Result</div>
-                    <div className="mt-6 font-mono text-sm text-gray-300 whitespace-pre-wrap flex-1 overflow-y-auto custom-scrollbar">
-                        {matrix ? matrix : <div className="flex items-center justify-center h-full text-gray-600 uppercase tracking-widest">No Matrix Generated</div>}
+                <div className="bg-[#0d0d0d] border border-[#333] relative p-1 overflow-hidden flex flex-col group hover:border-[#00f0ff]/30 transition-colors">
+                    <div className="bg-[#111] px-4 py-2 border-b border-[#333] flex justify-between items-center">
+                        <span className="text-xs font-mono uppercase text-[#00f0ff] tracking-widest flex items-center gap-2">
+                            <Search className="w-3 h-3" /> Search Matrix Result
+                        </span>
+                    </div>
+                    <div className="flex-1 bg-[#050505] p-6 font-mono text-sm text-gray-300 whitespace-pre-wrap overflow-y-auto custom-scrollbar leading-relaxed">
+                        {matrix ? matrix : <div className="flex flex-col items-center justify-center h-full text-[#333] gap-2">
+                            <Search className="w-8 h-8 opacity-20" />
+                            <span className="text-xs uppercase tracking-widest">Awaiting Parameters</span>
+                        </div>}
                     </div>
                 </div>
 
-                <div className="bg-[#0d0d0d] border border-[#222] p-6 flex flex-col">
-                     <h2 className="text-[#00f0ff] font-mono text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
+                <div className="bg-[#0d0d0d] border border-[#333] p-6 flex flex-col group hover:border-[#00f0ff]/30 transition-colors">
+                    <h2 className="text-[#00f0ff] font-mono text-sm uppercase tracking-widest mb-6 flex items-center gap-2">
                         <Code className="w-4 h-4" /> Boolean Architect
                     </h2>
-                    <textarea 
+                    <textarea
                         value={boolInput}
                         onChange={(e) => setBoolInput(e.target.value)}
-                        placeholder="Describe your ideal candidate in plain English (e.g. 'Java devs in Berlin who know Payments but NOT crypto...')"
-                        className="w-full h-24 bg-[#080808] border border-[#333] p-3 text-xs font-mono text-white mb-4 focus:border-[#00f0ff] outline-none resize-none"
+                        placeholder="// Describe ideal candidate logic here..."
+                        className="w-full h-32 bg-[#050505] border border-[#333] p-4 text-xs font-mono text-gray-300 mb-4 focus:border-[#00f0ff] outline-none resize-none transition-all placeholder:text-gray-700 leading-relaxed"
                     />
-                    <button 
+                    <button
                         onClick={generateBoolean}
                         disabled={boolLoading}
-                        className="w-full bg-[#111] border border-[#333] hover:border-[#00f0ff] text-[#00f0ff] py-2 text-xs font-bold uppercase tracking-widest mb-4 transition-all"
+                        className="w-full bg-[#111] border border-[#333] hover:border-[#00f0ff] text-[#00f0ff] py-3 text-xs font-bold uppercase tracking-widest mb-6 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
+                        {boolLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Code className="w-4 h-4" />}
                         {boolLoading ? 'Compiling Logic...' : 'Compile Boolean String'}
                     </button>
-                    
-                    <div className="flex-1 bg-[#050505] border border-[#222] p-4 relative group">
-                        <span className="absolute top-2 right-2 text-[10px] text-gray-600 uppercase">Output</span>
-                        <div className="font-mono text-xs text-green-500 break-words">
-                            {boolOutput || <span className="text-gray-700 italic">Ready to compile...</span>}
+
+                    <div className="flex-1 bg-[#050505] border border-[#333] p-4 relative group">
+                        <span className="absolute top-0 right-0 bg-[#111] border-l border-b border-[#333] px-2 py-1 text-[10px] text-[#888] uppercase font-mono">Output Stream</span>
+                        <div className="font-mono text-xs text-green-500 break-words pt-4">
+                            {boolOutput || <span className="text-[#333] italic">Ready to compile...</span>}
                         </div>
                     </div>
                 </div>
