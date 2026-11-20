@@ -1,3 +1,3 @@
 // Export all hooks
-export { useFirebaseUser } from './useFirebaseUser';
+export { useLocalTasks } from './useLocalTasks';
 export { useApiKey } from './useApiKey';
