@@ -48,21 +48,25 @@ src/
 - **Interview Analyzer**: AI feedback on interview notes
 - **Candidate Sourcing**: Boolean search compiler & sourcing matrix
 - **Communications Builder**: Tone-tuned outreach messages
-- **Task Management**: Integrated Pomodoro timer and task tracking
+- **Task Management**: Integrated Pomodoro timer and task tracking, saved in the browser
 
-## Environment Setup
+## Setup
 
-Create a `.env` file with:
-```
-VITE_FIREBASE_CONFIG=your_firebase_config_json
-VITE_INITIAL_AUTH_TOKEN=your_auth_token
+No backend or account is needed. Open **System Settings** in the app and paste a Gemini API key; it stays in your browser's local storage. Quick tasks are saved in local storage too.
+
+```bash
+npm install
+npm run dev     # local dev server
+npm test        # smoke tests (jsdom)
+npm run build   # production build in dist/
 ```
 
 ## Tech Stack
 
 - **Frontend**: React 18 + Tailwind CSS
 - **3D Graphics**: Three.js
-- **Backend**: Firebase (Auth, Firestore)
+- **Storage**: Browser localStorage (no backend)
+- **Tests**: Vitest + Testing Library (jsdom)
 - **AI**: Google Gemini API
 - **Icons**: Lucide React
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { createRenderer } from './createRenderer';
 
 const ThreePieChart = ({ data }) => {
   const mountRef = useRef(null);
@@ -16,7 +17,8 @@ const ThreePieChart = ({ data }) => {
     camera.position.set(2, 10, 12);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = createRenderer();
+    if (!renderer) return;
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.appendChild(renderer.domElement);

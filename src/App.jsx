@@ -9,19 +9,17 @@ import InterviewAnalyzer from './components/modules/InterviewAnalyzer';
 import CandidateSourcing from './components/modules/CandidateSourcing';
 import CommunicationBuilder from './components/modules/CommunicationBuilder';
 import SettingsModule from './components/modules/SettingsModule';
-import { useFirebaseUser } from './hooks/useFirebaseUser';
 
 export default function App() {
-  const user = useFirebaseUser();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const renderContent = () => {
     const contentMap = {
       dashboard: <Dashboard setActiveTab={setActiveTab} />,
-      playbook: <PlaybookGenerator user={user} setActiveTab={setActiveTab} />,
+      playbook: <PlaybookGenerator setActiveTab={setActiveTab} />,
       offer: <OfferOptimizer />,
       justification: <OfferJustification setActiveTab={setActiveTab} />,
-      interview: <InterviewAnalyzer user={user} setActiveTab={setActiveTab} />,
+      interview: <InterviewAnalyzer setActiveTab={setActiveTab} />,
       sourcing: <CandidateSourcing setActiveTab={setActiveTab} />,
       comm: <CommunicationBuilder setActiveTab={setActiveTab} />,
       settings: <SettingsModule />
@@ -34,7 +32,7 @@ export default function App() {
       <ThreeBackground />
       
       <div className="relative z-10 flex h-full w-full">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} user={user} />
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         
         <main className="flex-1 flex flex-col relative overflow-hidden">
           <header className="h-16 border-b border-[#222] flex items-center justify-between px-8 bg-[#0a0a0a]/80 backdrop-blur-sm z-20">
@@ -46,7 +44,7 @@ export default function App() {
             </div>
             <div className="flex items-center gap-4">
                  <div className="text-[10px] font-mono text-gray-500 uppercase flex items-center gap-2">
-                    <span className="hidden md:inline">User ID: {user ? user.uid.slice(0, 8) : 'GUEST'}</span>
+                    <span className="hidden md:inline">Local session</span>
                     <span className="text-[#00f0ff] border border-[#00f0ff]/30 px-2 py-0.5 rounded-full bg-[#00f0ff]/10">Online</span>
                  </div>
                  <div className="w-8 h-8 bg-[#111] border border-[#333] rounded-full flex items-center justify-center">

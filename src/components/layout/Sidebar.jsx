@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Play, Pause, RotateCcw, CheckSquare, Plus, Wand2, Trash2, Loader2, Terminal, Settings, LayoutDashboard, Cpu, Scale, Search, Users, BookOpen, MessageSquare, Activity, Briefcase, UserPlus } from 'lucide-react';
-import { query, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db, appId } from '../../config/firebase';
 import { callGemini } from '../../utils/geminiApi';
 import { useApiKey } from '../../hooks/useApiKey';
+import { useLocalTasks } from '../../hooks/useLocalTasks';
 
-const Sidebar = ({ activeTab, setActiveTab, user }) => {
+const Sidebar = ({ activeTab, setActiveTab }) => {
   const [pomodoro, setPomodoro] = useState({ active: false, timeLeft: 25 * 60 });
-  const [tasks, setTasks] = useState([]);
+  const { tasks, addTasks, toggleTask: toggleById, deleteTask } = useLocalTasks();
   const [newTask, setNewTask] = useState('');
   const [isMagicLoading, setIsMagicLoading] = useState(false);
   const hasKey = useApiKey();
@@ -30,27 +29,9 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  useEffect(() => {
-    if (!user || !db) return;
-    const q = query(collection(db, 'artifacts', appId, 'users', user.uid, 'tasks'));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const loaded = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.timestamp - a.timestamp);
-      if (loaded.length > 0) setTasks(loaded);
-    });
-    return () => unsub();
-  }, [user]);
-
-  const addTask = async (e) => {
+  const addTask = (e) => {
     if ((e.key === 'Enter' || e.type === 'click') && newTask.trim()) {
-      if (user && db) {
-        await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'tasks'), {
-          text: newTask,
-          completed: false,
-          timestamp: serverTimestamp()
-        });
-      } else {
-        setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }]);
-      }
+      addTasks([newTask.trim()]);
       setNewTask('');
     }
   };
@@ -66,22 +47,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
       const resp = await callGemini(originalTask, sys);
       const steps = resp.split('\n').filter(line => line.trim().length > 0);
 
-      if (user && db) {
-        for (const step of steps) {
-          await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'tasks'), {
-            text: step.replace(/^-\s*/, '').trim(),
-            completed: false,
-            timestamp: serverTimestamp()
-          });
-        }
-      } else {
-        const newTasks = steps.map(step => ({
-          id: Date.now() + Math.random(),
-          text: step.replace(/^-\s*/, '').trim(),
-          completed: false
-        }));
-        setTasks([...tasks, ...newTasks]);
-      }
+      addTasks(steps.map(step => step.replace(/^-\s*/, '').trim()).filter(Boolean));
       setNewTask('');
     } catch (e) {
       if (e.message === "MISSING_KEY") {
@@ -94,23 +60,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
     }
   };
 
-  const toggleTask = async (task) => {
-    if (user && db) {
-      await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'tasks', task.id), {
-        completed: !task.completed
-      });
-    } else {
-      setTasks(tasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t));
-    }
-  };
-
-  const deleteTask = async (id) => {
-    if (user && db) {
-      await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'tasks', id));
-    } else {
-      setTasks(tasks.filter(t => t.id !== id));
-    }
-  };
+  const toggleTask = (task) => toggleById(task.id);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -170,6 +120,33 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
 
         {/* Focus Toolbar (Fixed Bottom) */}
         <div className="p-3 bg-[#050505] border-t border-[#222] flex flex-col gap-2">
+          {/* Task List */}
+          {tasks.length > 0 && (
+            <ul className="max-h-32 overflow-y-auto custom-scrollbar space-y-1">
+              {tasks.map(task => (
+                <li key={task.id} className="group flex items-center gap-2 text-[10px] font-mono">
+                  <button
+                    onClick={() => toggleTask(task)}
+                    aria-label={task.completed ? 'Mark task not done' : 'Mark task done'}
+                    className={task.completed ? 'text-[#00f0ff]' : 'text-gray-600 hover:text-[#00f0ff]'}
+                  >
+                    <CheckSquare className="w-3 h-3" />
+                  </button>
+                  <span className={`flex-1 truncate ${task.completed ? 'line-through text-gray-600' : 'text-gray-300'}`}>
+                    {task.text}
+                  </span>
+                  <button
+                    onClick={() => deleteTask(task.id)}
+                    aria-label="Delete task"
+                    className="text-gray-700 hover:text-red-500 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
           {/* Quick Task Input */}
           <div className="relative flex items-center gap-1">
             <input
